@@ -65,16 +65,6 @@ func processConfigure(filename string) []*Route {
 
 	log.Printf("load config %s\n%v", filename, dump(cfg))
 
-	actionMap := make(map[string][]action.Acter, len(cfg.Actions))
-
-	for name, acfg := range cfg.Actions {
-		acts, err := action.NewActions(&acfg)
-		if err != nil {
-			log.Fatal(err)
-		}
-		actionMap[name] = acts
-	}
-
 	routes := make([]*Route, 0, len(cfg.Matches))
 
 	for _, mcfg := range cfg.Matches {
@@ -93,9 +83,9 @@ func processConfigure(filename string) []*Route {
 			tmpls[name] = template
 		}
 
-		acts, ok := actionMap[mcfg.Action]
-		if ok == false {
-			log.Fatalf("Undefined action %v", mcfg.Action)
+		acts, err := action.NewActions(&mcfg.Actions)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		routes = append(routes, &Route{
@@ -121,8 +111,6 @@ func processTrapHandler(input []byte, routes []*Route) {
 		if ok == false {
 			continue
 		}
-
-		log.Printf("action %v running...", route.Action)
 
 		values = prepareValues(route, trap, values)
 

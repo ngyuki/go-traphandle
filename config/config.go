@@ -19,7 +19,6 @@ func Load(filename string) (*Config, error) {
 }
 
 type Config struct {
-	Actions  map[string]ActionConfig
 	Defaults map[string]string
 	Matches  []MatchConfig
 }
@@ -31,7 +30,7 @@ type MatchConfig struct {
 	Bindings    map[string]string
 	Conditions  map[string]ConditionConfig
 	Formats     map[string]string
-	Action      string
+	Actions     ActionConfig
 	Fallthrough bool
 }
 

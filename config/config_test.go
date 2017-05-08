@@ -49,6 +49,20 @@ func TestConfig(t *testing.T) {
 	if _, ok := m.Formats["subject"]; ok != true {
 		t.Errorf("config.Matches.Formats ... %v", m.Formats)
 	}
+
+	// Actions
+	if len(m.Actions.Emails) == 0 {
+		t.Errorf("config.Actions ... %v", m.Actions)
+	}
+	if len(m.Actions.Scripts) == 0 {
+		t.Errorf("config.Actions ... %v", m.Actions)
+	}
+	if val := m.Actions.Emails[0].From; val != "root@example.com" {
+		t.Errorf("config.Actions ... %v", m.Actions)
+	}
+	if val := m.Actions.Scripts[0]; val != "env | sort | logger -t snmptrap" {
+		t.Errorf("config.Actions ... %v", m.Actions)
+	}
 }
 
 func TestLoadConfig_notfound(t *testing.T) {

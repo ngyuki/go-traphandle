@@ -12,8 +12,8 @@ func NewActions(cfg *config.ActionConfig) ([]Acter, error) {
 
 	actions := make([]Acter, 0)
 
-	for i := range cfg.Emails {
-		act, err := newEmailAction(&cfg.Emails[i])
+	for _, email := range cfg.Emails {
+		act, err := newEmailAction(&email)
 		if err != nil {
 			return nil, err
 		}

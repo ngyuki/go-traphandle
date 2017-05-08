@@ -10,19 +10,19 @@ import (
 )
 
 type emailAction struct {
-	*config.EmailConfig
+	config.EmailConfig
 }
 
 func newEmailAction(cfg *config.EmailConfig) (*emailAction, error) {
 
-	act := &emailAction{EmailConfig: cfg}
+	act := &emailAction{EmailConfig: *cfg}
 
 	if len(act.From) == 0 {
-		return nil, fmt.Errorf("must be set 'from' by %+v", *act.EmailConfig)
+		return nil, fmt.Errorf("must be set 'from' by %+v", act.EmailConfig)
 	}
 
 	if len(act.To) == 0 {
-		return nil, fmt.Errorf("must be set 'to' by %v", *act.EmailConfig)
+		return nil, fmt.Errorf("must be set 'to' by %v", act.EmailConfig)
 	}
 
 	if len(act.Host) == 0 {

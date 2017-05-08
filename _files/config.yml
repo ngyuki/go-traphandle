@@ -1,14 +1,4 @@
 
-actions:
-  oreore:
-    emails:
-      - host: localhost
-        port : 25
-        from: root@example.com
-        to:  vagrant@localhost
-    scripts:
-      - env | sort | logger -t snmptrap
-
 defaults:
   url: http://example.com/
 
@@ -31,5 +21,13 @@ matches:
         Message: Interface {{.index}} linkdown
         ---
         {{.url}}
-    action: oreore
+    actions:
+      emails:
+        - host: localhost
+          port : 25
+          from: root@example.com
+          to:  vagrant@localhost
+      scripts:
+        - env | sort | logger -t snmptrap
+
     fallthrough: True
