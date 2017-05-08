@@ -15,14 +15,6 @@ go get github.com/ngyuki/go-traphandle/cmd/go-traphandle
 メールアドレス、IPアドレス、コミュニティ名などは適宜変更してください。
 
 ```yaml
-actions:
-  oreore:
-    emails:
-      - host: localhost
-        port : 25
-        from: root@example.com
-        to:  ore@example.com
-
 defaults:
   url: http://example.com/
 
@@ -45,7 +37,12 @@ matches:
         Message: Interface {{.index}} linkdown
         ---
         {{.url}}
-    action: oreore
+    actions:
+      emails:
+        - host: localhost
+          port : 25
+          from: root@example.com
+          to:  ore@example.com
     fallthrough: True
 ```
 
@@ -177,7 +174,31 @@ XXX-MIB::sample.**  XXX-MIB::sample.1.2 ... OK
 
 **action**
 
-条件にマッチした場合に実行する、`actions` のキー名を指定します。後述の `actions` の説明を参照してください。
+条件にマッチした場合に実行するアクションを定義します。
+
+```yaml
+    actions:
+      emails:
+        - host: localhost
+          port : 25
+          from: root@example.com
+          to:  ore@example.com
+        - host: localhost
+          port : 25
+          from: root@example.com
+          to:  are@example.com
+      scripts:
+        - env | sort | logger -t snmptrap
+```
+
+`actions` の直下のキーが実行するアクションの種類を表しており、下記のいずれかが指定できます。
+
+- `emails`
+- `scripts`
+
+`emails` では `host,port,from,to` の４項目の連想配列の配列を指定します。`host` と `port` は省略可能で、省略された場合はそれぞれ `localhost` と `25` になります。
+
+`scripts` には実行するコマンドを複数指定します。コマンドは `/bin/sh` 経由で実行されます。スクリプト実行時に、`bindings` で名前付けられたデータバインディングの変数や `formats` で書式化された変数が、プレフィックス `TH_` を付与された上で設定されます。例えば `index` という変数は `TH_index` という環境変数になります。
 
 **fallthrough**
 
@@ -186,35 +207,6 @@ XXX-MIB::sample.**  XXX-MIB::sample.1.2 ... OK
 `False` だと条件にマッチした時点で当該トラップの処理は終了します（デフォルト）。
 
 `True` だと条件にマッチした後も以降のマッチがチェックされます。
-
-### actions
-
-`matches` の条件にマッチしたときに実行されるアクションを定義します。
-
-```yaml
-actions:
-  oreore:
-    emails:
-      - host: localhost
-        port : 25
-        from: root@example.com
-        to:  ore@example.com
-      - host: localhost
-        port : 25
-        from: root@example.com
-        to:  are@example.com
-    scripts:
-      - env | sort | logger -t snmptrap
-```
-
-`actions` の直下のキーが `matches` の `action` で指定する値です。その下のキーが実行するアクションの種類を表しており、下記のいずれかが指定できます。
-
-- `emails`
-- `scripts`
-
-`emails` では `host,port,from,to` の４項目の連想配列の配列を指定します。`host` と `port` は省略可能で、省略された場合はそれぞれ `localhost` と `25` になります。
-
-`scripts` には実行するコマンドを複数指定します。コマンドは `/bin/sh` 経由で実行されます。スクリプト実行時に、`bindings` で名前付けられたデータバインディングの変数や `formats` で書式化された変数が、プレフィックス `TH_` を付与された上で設定されます。例えば `index` という変数は `TH_index` という環境変数になります。
 
 ### default
 
@@ -239,3 +231,25 @@ actions:
 `snmptrapd` の `traphandle` に渡されるトラップの内容は OID が生の数値になっている前提です。なので `snmptrapd.conf` で `outputOption n` を指定して生の値が使われる必要があります。
 
 また、マルチバイト文字を含むトラップを受信したときに情報が欠損しないようにするために `[snmp]` セクションで `noDisplayHint yes` もオススメです。
+
+## YAML のアンカーとエイリアス
+
+例えば複数の `matches` で同じアクションを使いたい場合などは、YAML のアンカーとエイリアスを使えばスッキリ掛けます。
+
+```yaml
+_: &action_email_ore
+  emails:
+    - host: localhost
+      port : 25
+      from: root@example.com
+      to:  vagrant@localhost
+
+matches:
+  - trap: IF-MIB::linkDown
+    :
+    actions: *action_email_ore
+
+  - trap: IF-MIB::linkUp
+    :
+    actions: *action_email_ore
+```
