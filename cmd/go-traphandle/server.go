@@ -4,7 +4,32 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
+	_ "net/http/pprof"
+	"strings"
 )
+
+type Handler struct {
+	callback func([]byte)
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	log.Printf("%s %s %s %s \"%s\": ", r.RemoteAddr, r.Method, r.URL, r.Proto, r.UserAgent())
+
+	if strings.ToUpper(r.Method) != "POST" {
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("request error ... ", err)
+		return
+	}
+
+	h.callback(body)
+	log.Println("request complete")
+}
 
 func startServer(server string, callback func([]byte)) {
 
@@ -20,26 +45,6 @@ func startServer(server string, callback func([]byte)) {
 
 	log.Printf("listen ... %v", addr)
 
-	for {
-		conn, err := listen.AcceptTCP()
-		if err != nil {
-			log.Printf("accept error ... %v", err)
-			continue
-		}
-
-		go func(conn *net.TCPConn) {
-			defer conn.Close()
-
-			input, err := ioutil.ReadAll(conn)
-			if err != nil {
-				log.Printf("accept %v recv error %v", conn.RemoteAddr().String(), err)
-				return
-			}
-
-			log.Printf("accept %v recv %v bytes", conn.RemoteAddr().String(), len(input))
-
-			callback(input)
-
-		}(conn)
-	}
+	http.Handle("/", &Handler{callback})
+	log.Println(http.Serve(listen, nil))
 }

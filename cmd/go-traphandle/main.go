@@ -31,6 +31,8 @@ type Route struct {
 
 func main() {
 
+	log.SetFlags(0)
+
 	opt := options{}
 	opt.server = flag.String("server", "", "Server bind address (default pipe mode)")
 	opt.config = flag.String("config", "config.yml", "Configuration filename")

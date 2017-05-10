@@ -62,7 +62,7 @@ noDisplayHint yes
 disableAuthorization yes
 ignoreAuthFailure yes
 outputOption n
-traphandle default /usr/bin/nc 127.0.0.1 9999
+traphandle default /usr/bin/curl 127.0.0.1:9999 -X POST --data-binary @-
 ```
 
 snmptrapd をリスタートします。
@@ -79,7 +79,7 @@ systemctl restart snmptrapd
 go-traphandle -server <bind-address> -config <config-file>
 ```
 
-`go-traphandle` はサーバとして動作します。`snmptrapd` の `traphandle` で `go-traphandle` がリッスンしているポートへトラップの内容を送信する必要があります。↑の例では `nc` コマンドでトラップを送信しています。
+`go-traphandle` はサーバとして動作します。`snmptrapd` の `traphandle` で `go-traphandle` がリッスンしているポートへトラップの内容を送信する必要があります。↑の例では `curl` コマンドでトラップを送信しています。
 
 `-server` でリッスンするアドレス・ポートを指定します。
 
